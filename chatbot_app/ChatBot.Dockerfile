@@ -22,6 +22,7 @@ WORKDIR /app
 COPY --from=build /app/.venv .venv
 
 COPY app .
-COPY entrypoint.sh .
+COPY chatbot_entry.sh .
+COPY ../sample.env app/.env
 
-CMD [ "./entrypoint.sh" ]
+CMD [ "./chatbot_entry.sh" ]

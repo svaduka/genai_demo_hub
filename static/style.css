@@ -1,0 +1,24 @@
+/* styles.css */
+.css-18e3th9 {
+    background-color: #f4f4f4;
+}
+
+.css-1d391kg {
+    background-color: #ffffff;
+}
+
+.sidebar .sidebar-content {
+    padding: 10px;
+    background-color: #2E86C1;
+    color: white;
+}
+
+.sidebar .sidebar-content a {
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.sidebar .sidebar-content a:hover {
+    color: #d1e9ff;
+}
