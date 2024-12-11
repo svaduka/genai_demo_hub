@@ -11,7 +11,7 @@ fi
 echo "Docker is installed."
 
 # Define the target port
-PORT=7775
+PORT=7777
 
 # Find any Docker container using the port
 echo "Checking if any Docker container is using port $PORT..."
