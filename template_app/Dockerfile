@@ -23,7 +23,7 @@ COPY --from=build /app/.venv .venv
 
 COPY app .
 COPY entrypoint.sh .
-COPY demo_hub.env app/.env
-COPY static/style.css app/static/style.css
+COPY demo_hub.env .env
+COPY static/style.css static/style.css
 
 CMD [ "./entrypoint.sh" ]

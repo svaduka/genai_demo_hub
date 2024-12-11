@@ -12,4 +12,6 @@ docker stop <container id>
 docker rm <container id>
 docker rmi <image id>
 
+docker run -p 7775:80 template-app-template-app
 docker run -p 7777:80 template-app-template-app
+docker exec -it template-app-template-app /bin/bash

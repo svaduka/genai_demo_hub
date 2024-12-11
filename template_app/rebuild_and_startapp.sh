@@ -11,7 +11,7 @@ fi
 echo "Docker is installed."
 
 # Define the target port
-PORT=7777
+PORT=7775
 
 # Find any Docker container using the port
 echo "Checking if any Docker container is using port $PORT..."
@@ -54,6 +54,6 @@ docker volume prune -f
 
 # Run docker-compose build and start in detached mode
 echo "Building and starting containers using docker-compose..."
-docker-compose up --build -d
+# docker-compose up --build -d
 
 echo "All done!"
