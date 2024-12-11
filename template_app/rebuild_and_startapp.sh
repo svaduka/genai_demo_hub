@@ -54,6 +54,6 @@ docker volume prune -f
 
 # Run docker-compose build and start in detached mode
 echo "Building and starting containers using docker-compose..."
-# docker-compose up --build -d
+docker-compose up --build -d
 
 echo "All done!"
