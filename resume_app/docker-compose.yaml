@@ -1,0 +1,22 @@
+name: template-app
+
+services:
+  template-app:
+    container_name: template-app
+    build:
+      context: .
+      additional_contexts:
+        - libs-python=libs/python
+    ports:
+      - 7777:80
+    environment:
+      DO_NOT_TRACK: 1
+      STREAMLIT_CLIENT_TOOLBAR_MODE: viewer
+      VIRTUAL_HOST: localhost
+    volumes:
+      - ./.data:/mnt/data
+    env_file:
+      - path: app/.env
+        required: false
+      - path: ../.env
+        required: true
