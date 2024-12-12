@@ -3,6 +3,7 @@ from typing import Union
 from io import BytesIO
 from PyPDF2 import PdfReader
 from docx import Document
+import json
 
 
 def get_file_type(file: BytesIO, file_name: str) -> str:
@@ -109,3 +110,40 @@ def extract_content_from_text(file: BytesIO) -> str:
         return file.read().decode("utf-8").strip()
     except Exception as e:
         raise ValueError(f"Error extracting content from text file: {str(e)}")
+
+def parse_json(input_data: Union[str, dict]) -> dict:
+    """
+    Parse the input to ensure it's a JSON object.
+
+    Args:
+        input_data (str or dict): The input data, either as a JSON string or dictionary.
+    
+    Returns:
+        dict: The parsed JSON object.
+    """
+    if isinstance(input_data, str):
+        return json.loads(input_data)
+    elif isinstance(input_data, dict):
+        return input_data
+    else:
+        raise ValueError("Input must be a JSON string or dictionary.")
+        
+
+def convert_to_html_table(json_data: dict) -> str:
+    """
+    Convert a JSON object into an HTML table.
+
+    Args:
+        json_data (dict): The JSON object to be converted.
+    
+    Returns:
+        str: HTML string representing the table.
+    """
+    table_html = "<table border='1' style='border-collapse: collapse; width: 50%; text-align: left;'>"
+    table_html += "<tr><th>Key</th><th>Value</th></tr>"
+
+    for key, value in json_data.items():
+        table_html += f"<tr><td>{key}</td><td>{value}</td></tr>"
+
+    table_html += "</table>"
+    return table_html

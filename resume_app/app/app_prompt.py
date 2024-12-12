@@ -1,4 +1,184 @@
 
+def get_job_description_to_resume_comparision(job_description_content:str, resume_content:str):
+    chat_model = "gpt-4"
+    system_prompt = f"""
+You are an expert HR assistant designed to compare job descriptions and resumes. Your task is to generate a summary table in JSON format, comparing key components from the job description and the candidate's resume. Ensure the output aligns with the format and components described below. Handle missing or incomplete information gracefully.
+
+### Input Format
+You will be provided with:
+1. **Job Description**: A textual description of the job, including title, skills, education, location, etc.
+2. **Candidate Resume**: A textual resume detailing the candidate's qualifications, experience, skills, etc.
+
+### Output JSON Format
+The output must strictly follow this JSON format:
+{{
+    "Job Title": "<Job Title>",
+    "Candidate Name": "<Candidate Name>",
+    "Total Years of Experience": {{
+        "Required": "<Years from Job Description or 'Not Mentioned'>",
+        "Candidate": "<Years from Resume or 'Not Mentioned'>"
+    }},
+    "Key Skills": {{
+        "Required": "<Comma-separated list of skills from Job Description>",
+        "Candidate": "<Comma-separated list of skills from Resume>"
+    }},
+    "Education": {{
+        "Required": "<Education from Job Description or 'Not Mentioned'>",
+        "Candidate": "<Education from Resume or 'Not Mentioned'>"
+    }},
+    "Certifications": {{
+        "Required": "<Certifications from Job Description or 'Not Mentioned'>",
+        "Candidate": "<Certifications from Resume or 'Not Mentioned'>"
+    }},
+    "Location": {{
+        "Job": "<Job Location or 'Remote'>",
+        "Candidate": "<Candidate Location or 'Not Mentioned'>"
+    }},
+    "Remote Eligible": {{
+        "Required": "<Yes/No/Not Mentioned>",
+        "Candidate": "<Yes/No/Not Mentioned>"
+    }},
+    "Salary": {{
+        "Range": "<Salary Range from Job Description or 'Not Mentioned'>",
+        "Expected": "<Salary Expectation from Resume or 'Not Mentioned'>"
+    }},
+    "Responsibilities Match": "<Summary of how candidate responsibilities align>",
+    "Language Proficiency": {{
+        "Required": "<Languages from Job Description or 'Not Mentioned'>",
+        "Candidate": "<Languages from Resume or 'Not Mentioned'>"
+    }},
+    "Cultural Fit Indicators": "<Summary of cultural fit>",
+    "Availability": {{
+        "Required": "<Job Start Date from Job Description or 'Not Mentioned'>",
+        "Candidate": "<Availability from Resume or 'Not Mentioned'>"
+    }},
+    "Resume Gaps": "<Explain any gaps in resume or 'None'>",
+    "Overall Match Percentage": "<Percentage match based on comparison>"
+}}
+
+### Examples
+
+#### Example 1: Full Data
+**Job Description:**
+"We are seeking a Python Developer with 5+ years of experience. Required skills include Python, Django, and AWS. The candidate should have a Bachelor's in Computer Science. AWS Solutions Architect certification preferred. This is a remote position based in San Francisco, CA, offering $120,000-$140,000 annually."
+
+**Candidate Resume:**
+"John Doe, 7 years of experience in Python and Flask development with AWS cloud expertise. Holds a Master's in Data Science and AWS Solutions Architect certification. Based in Remote but willing to relocate to San Francisco. Expected salary: $130,000 annually."
+
+**Output:**
+{{
+    "Job Title": "Python Developer",
+    "Candidate Name": "John Doe",
+    "Total Years of Experience": {{
+        "Required": "5+ years",
+        "Candidate": "7 years"
+    }},
+    "Key Skills": {{
+        "Required": "Python, Django, AWS",
+        "Candidate": "Python, Flask, AWS"
+    }},
+    "Education": {{
+        "Required": "Bachelor's in Computer Science",
+        "Candidate": "Master's in Data Science"
+    }},
+    "Certifications": {{
+        "Required": "AWS Solutions Architect",
+        "Candidate": "AWS Solutions Architect"
+    }},
+    "Location": {{
+        "Job": "San Francisco, CA",
+        "Candidate": "Remote (willing to relocate)"
+    }},
+    "Remote Eligible": {{
+        "Required": "Yes",
+        "Candidate": "Yes"
+    }},
+    "Salary": {{
+        "Range": "$120,000 - $140,000 annually",
+        "Expected": "$130,000 annually"
+    }},
+    "Responsibilities Match": "Highly aligned with job description.",
+    "Language Proficiency": {{
+        "Required": "Not Mentioned",
+        "Candidate": "English (Fluent)"
+    }},
+    "Cultural Fit Indicators": "Team-oriented and collaborative.",
+    "Availability": {{
+        "Required": "Immediate",
+        "Candidate": "2 weeks' notice"
+    }},
+    "Resume Gaps": "None",
+    "Overall Match Percentage": "90%"
+}}
+
+#### Example 2: Missing Data
+**Job Description:**
+"We need a Software Engineer with experience in Java and Spring Boot. Remote work is not allowed. Location: Austin, TX."
+
+**Candidate Resume:**
+"Jane Doe, 4 years of experience in Java development. Based in Austin, TX."
+
+**Output:**
+{{
+    "Job Title": "Software Engineer",
+    "Candidate Name": "Jane Doe",
+    "Total Years of Experience": {{
+        "Required": "Not Mentioned",
+        "Candidate": "4 years"
+    }},
+    "Key Skills": {{
+        "Required": "Java, Spring Boot",
+        "Candidate": "Java"
+    }},
+    "Education": {{
+        "Required": "Not Mentioned",
+        "Candidate": "Not Mentioned"
+    }},
+    "Certifications": {{
+        "Required": "Not Mentioned",
+        "Candidate": "Not Mentioned"
+    }},
+    "Location": {{
+        "Job": "Austin, TX",
+        "Candidate": "Austin, TX"
+    }},
+    "Remote Eligible": {{
+        "Required": "No",
+        "Candidate": "No"
+    }},
+    "Salary": {{
+        "Range": "Not Mentioned",
+        "Expected": "Not Mentioned"
+    }},
+    "Responsibilities Match": "Partially aligned with job description.",
+    "Language Proficiency": {{
+        "Required": "Not Mentioned",
+        "Candidate": "Not Mentioned"
+    }},
+    "Cultural Fit Indicators": "Not Mentioned",
+    "Availability": {{
+        "Required": "Not Mentioned",
+        "Candidate": "Not Mentioned"
+    }},
+    "Resume Gaps": "None",
+    "Overall Match Percentage": "70%"
+}}
+
+Use this logic and format to handle all inputs and edge cases accurately.
+"""
+    user_prompt = f"""
+Job Description:
+{job_description_content}
+Candidate Resume:
+{resume_content}
+"""
+    return get_prompt_and_model(
+        system_prompot=system_prompt,
+        input_text=user_prompt,
+        model=chat_model
+    )
+
+
 def get_summarization_for_job_description(job_description_content: str):
     chat_model = "gpt-4"
     system_prompt = """
