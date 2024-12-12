@@ -2,6 +2,7 @@
 import json
 import traceback
 from typing import Union
+import logging
 
 # Third-Party Imports
 import streamlit as st
@@ -10,6 +11,7 @@ import streamlit as st
 from llm_service import OpenAIChatClient
 import app_prompt as prmpt
 from logger import log_msg  # Assuming a logger class exists
+import file_utils as fu
 
 def parse_json(input_data: Union[str, dict]) -> dict:
     """
@@ -68,6 +70,7 @@ def summarize_content(input_text: str) -> str:
     try:
         log_msg("Preparing summarization request.", level=logging.INFO)
         llm_args = prmpt.get_summarization_for_job_description(job_description_content=input_text)
+        log_msg(f"Input prompt : {llm_args}")
         llm = OpenAIChatClient()
         response = llm.get_response(llm_args)
         log_msg("Received response from OpenAIChatClient.", level=logging.INFO)
@@ -105,7 +108,11 @@ def load_summarize_job_description():
         if job_description:
             input_text = job_description
         elif uploaded_file:
-            input_text = f"Uploaded file: {uploaded_file.name}"  # Placeholder for file content processing
+            input_file_name = uploaded_file.name  # Placeholder for file content processing
+            log_msg(f"Input file name: {input_file_name}")
+            input_text = fu.extract_content_from_file(input_file_name)
+        
+        log_msg(f"Input text: {input_text}")
 
         # Summarize Button
         if st.button("Summarize"):

@@ -16,4 +16,5 @@ docker login
 
 docker run -p 7775:80 resume-app-resume-app
 docker run -p 7777:80 resume-app-resume-app
-docker exec -it resume-app-resume-app /bin/bash
+docker exec -it resume-app /bin/bash
+docker logs -f resume-app

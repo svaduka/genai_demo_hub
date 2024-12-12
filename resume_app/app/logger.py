@@ -24,11 +24,11 @@ def configure_logging(app_name="gen_ai_app"):
     
     # Configure the logger with the app name
     logger = logging.getLogger(app_name)
-    # logger.setLevel(logging.DEBUG)  # Set default level to DEBUG
+    logger.setLevel(logging.INFO)  # Set default level to DEBUG
 
     # Create file handler (log to file) with debug level
     file_handler = RotatingFileHandler(log_filename, maxBytes=5*1024*1024, backupCount=5)  # Max 5MB per file, with 5 backups
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(file_formatter)
     

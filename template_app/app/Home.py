@@ -1,8 +1,10 @@
 import streamlit as st
 import logging
-from logger import log_msg  # Assuming logger class is in logger.py
+from logger import log_msg,configure_logging  # Assuming logger class is in logger.py
 
 css_file = "./static/style.css"
+
+configure_logging() # DONOT REMOVE
 
 def load_css(file_name):
     """

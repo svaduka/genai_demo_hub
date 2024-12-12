@@ -1,12 +1,14 @@
 import streamlit as st
 import logging
-from logger import log_msg  # Assuming logger is implemented in logger.py
+from logger import log_msg,configure_logging  # Assuming logger is implemented in logger.py
 from ReadMePage import load_readme_page
 from SummarizeJobDescription import load_summarize_job_description
 from SummarizeResume import load_summarize_resume
 from JobDescriptionToResume import load_job_description_to_resume
 
 css_file = "./static/style.css"
+
+configure_logging()
 
 def load_css(file_name):
     """
