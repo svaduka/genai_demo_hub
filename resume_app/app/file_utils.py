@@ -147,3 +147,53 @@ def convert_to_html_table(json_data: dict) -> str:
 
     table_html += "</table>"
     return table_html
+def parse_nested_json_to_html_table(json_data):
+    """
+    Parse the given JSON into an HTML table.
+
+    Args:
+        json_data (dict): The JSON data to parse.
+
+    Returns:
+        str: An HTML string representing the table.
+    """
+    try:
+        # Start the HTML table
+        html = """
+        <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Job Description</th>
+                    <th>Candidate</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        # Iterate through the JSON data and build table rows
+        for key, value in json_data.items():
+            if isinstance(value, dict):  # Handle nested dictionaries
+                html += f"<tr><td>{key}</td>"  # Add the main key as a row
+                # Ensure two cells for nested dictionaries
+                sub_values = list(value.values())
+                if len(sub_values) == 2:  # Expected two keys: 'Required' and 'Candidate'
+                    html += f"<td>{sub_values[0]}</td><td>{sub_values[1]}</td></tr>"
+                else:
+                    raise ValueError(f"Nested dictionary for '{key}' must have exactly two keys.")
+            else:  # Handle simple key-value pairs
+                html += f"""
+                <tr>
+                    <td>{key}</td>
+                    <td colspan="2">{value}</td>
+                </tr>
+                """
+
+        # Close the HTML table
+        html += """
+            </tbody>
+        </table>
+        """
+        return html
+    except Exception as e:
+        raise ValueError(f"Error generating HTML table: {str(e)}")

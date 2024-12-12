@@ -40,7 +40,7 @@ def compare_job_description_to_resume(job_description_text, resume_content):
         json_response = fu.parse_json(response)
 
         log_msg("Converting JSON response to HTML table.", level=logging.INFO)
-        output_html = fu.convert_to_html_table(json_response)
+        output_html = fu.parse_nested_json_to_html_table(json_response)
 
         log_msg("Successfully generated HTML table for comparison.", level=logging.INFO)
         return output_html
