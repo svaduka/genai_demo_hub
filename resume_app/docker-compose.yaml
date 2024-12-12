@@ -1,8 +1,8 @@
-name: template-app
+name: resume-app
 
 services:
-  template-app:
-    container_name: template-app
+  resume-app:
+    container_name: resume-app
     build:
       context: .
       additional_contexts:
