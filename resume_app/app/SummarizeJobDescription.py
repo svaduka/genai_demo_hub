@@ -5,7 +5,6 @@ def summarize_content(input_text):
     Simulates summarization of the input text.
     Replace this logic with actual summarization implementation.
     """
-    # For now, return "Hello, World!" as the summary
     return "Hello, World!"
 
 def load_summarize_job_description():
@@ -41,15 +40,13 @@ def load_summarize_job_description():
     # Section 2: Output
     with col2:
         st.subheader("Summarization Report")
-        # Add a border around the output section
+        # Add a border around the output section using existing CSS classes
         st.markdown(
-            """
-            <div style="border: 1px solid #d1d1d1; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
-                <strong>Output:</strong><br>
-                {}
+            f"""
+            <div class="output-container">
+                <div class="output-title">Output:</div>
+                {st.session_state.get("summary", "Output will be displayed here after summarization.")}
             </div>
-            """.format(
-                st.session_state.get("summary", "Output will be displayed here after summarization.")
-            ),
+            """,
             unsafe_allow_html=True,
         )
