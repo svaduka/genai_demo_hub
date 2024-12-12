@@ -1,69 +1,74 @@
-import os
 import mimetypes
 from typing import Union
+from io import BytesIO
 from PyPDF2 import PdfReader
 from docx import Document
 
-def get_file_type(file_path: str) -> str:
+
+def get_file_type(file: BytesIO, file_name: str) -> str:
     """
-    Determine the type of a file based on its extension or MIME type.
+    Determine the type of an uploaded file based on its MIME type or extension.
 
     Args:
-        file_path (str): The path to the file.
+        file (BytesIO): The uploaded file object.
+        file_name (str): The name of the uploaded file.
 
     Returns:
         str: The file type ("pdf", "docx", "text", or "unknown").
     """
-    file_name, file_extension = os.path.splitext(file_path.lower())
-    mime_type, _ = mimetypes.guess_type(file_path)
+    mime_type, _ = mimetypes.guess_type(file_name)
+    file_extension = file_name.split(".")[-1].lower()
 
-    if file_extension == ".pdf":
+    if file_extension == "pdf":
         return "pdf"
-    elif file_extension in [".docx", ".doc"]:
+    elif file_extension in ["docx", "doc"]:
         return "docx"
-    elif file_extension in [".txt"]:
+    elif file_extension in ["txt"]:
         return "text"
     elif mime_type and "text" in mime_type:
         return "text"
     else:
         return "unknown"
 
-def extract_content_from_file(file_path: str) -> Union[str, None]:
+
+def extract_content_from_file(file: BytesIO, file_name: str) -> Union[str, None]:
     """
-    Extract content from a file based on its type.
+    Extract content from an uploaded file based on its type.
 
     Args:
-        file_path (str): The path to the file.
+        file (BytesIO): The uploaded file object.
+        file_name (str): The name of the uploaded file.
 
     Returns:
         str: The extracted content from the file.
     """
-    file_type = get_file_type(file_path)
+    file_type = get_file_type(file, file_name)
 
     try:
         if file_type == "pdf":
-            return extract_content_from_pdf(file_path)
+            return extract_content_from_pdf(file)
         elif file_type == "docx":
-            return extract_content_from_docx(file_path)
+            return extract_content_from_docx(file)
         elif file_type == "text":
-            return extract_content_from_text(file_path)
+            return extract_content_from_text(file)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
     except Exception as e:
-        raise ValueError(f"Error reading file '{file_path}': {str(e)}")
+        raise ValueError(f"Error reading file '{file_name}': {str(e)}")
 
-def extract_content_from_pdf(file_path: str) -> str:
+
+def extract_content_from_pdf(file: BytesIO) -> str:
     """
-    Extract content from a PDF file.
+    Extract content from an uploaded PDF file.
 
     Args:
-        file_path (str): The path to the PDF file.
+        file (BytesIO): The uploaded PDF file object.
 
     Returns:
         str: The extracted content from the PDF.
     """
     try:
-        reader = PdfReader(file_path)
+        reader = PdfReader(file)
         content = ""
         for page in reader.pages:
             content += page.extract_text()
@@ -71,35 +76,36 @@ def extract_content_from_pdf(file_path: str) -> str:
     except Exception as e:
         raise ValueError(f"Error extracting content from PDF: {str(e)}")
 
-def extract_content_from_docx(file_path: str) -> str:
+
+def extract_content_from_docx(file: BytesIO) -> str:
     """
-    Extract content from a DOCX file.
+    Extract content from an uploaded DOCX file.
 
     Args:
-        file_path (str): The path to the DOCX file.
+        file (BytesIO): The uploaded DOCX file object.
 
     Returns:
         str: The extracted content from the DOCX file.
     """
     try:
-        document = Document(file_path)
+        document = Document(file)
         content = "\n".join([paragraph.text for paragraph in document.paragraphs])
         return content.strip()
     except Exception as e:
         raise ValueError(f"Error extracting content from DOCX: {str(e)}")
 
-def extract_content_from_text(file_path: str) -> str:
+
+def extract_content_from_text(file: BytesIO) -> str:
     """
-    Extract content from a text file.
+    Extract content from an uploaded text file.
 
     Args:
-        file_path (str): The path to the text file.
+        file (BytesIO): The uploaded text file object.
 
     Returns:
         str: The extracted content from the text file.
     """
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return file.read().strip()
+        return file.read().decode("utf-8").strip()
     except Exception as e:
         raise ValueError(f"Error extracting content from text file: {str(e)}")

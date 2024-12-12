@@ -110,7 +110,7 @@ def load_summarize_job_description():
         elif uploaded_file:
             input_file_name = uploaded_file.name  # Placeholder for file content processing
             log_msg(f"Input file name: {input_file_name}")
-            input_text = fu.extract_content_from_file(input_file_name)
+            input_text = fu.extract_content_from_file(uploaded_file, input_file_name)
         
         log_msg(f"Input text: {input_text}")
 
