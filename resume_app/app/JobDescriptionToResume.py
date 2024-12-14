@@ -5,7 +5,7 @@ from logger import log_msg  # Assuming logger class with log_msg is already impl
 import file_utils as fu
 import app_prompt as prmpt
 from llm_service import OpenAIChatClient
-import file_utils as fu
+
 
 def compare_job_description_to_resume(job_description_text, resume_content):
     """
@@ -117,9 +117,9 @@ def load_job_description_to_resume():
                 if output_html:
                     st.markdown(
                         f"""
-                        <div class="output-container" style="border: 1px solid #d1d1d1; padding: 10px; border-radius: 5px; background-color: #f9f9f9; overflow-x: auto;">
-                            <div class="output-title" style="font-weight: bold; margin-bottom: 10px;">Compatibility Assessment:</div>
-                            {output_html}
+                        <div class="output-container">
+                            <div class="output-title">Compatibility Assessment:</div>
+                            {st.session_state.get("output", "Output will be displayed here after comparison.")}
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -128,8 +128,8 @@ def load_job_description_to_resume():
                 else:
                     st.markdown(
                         """
-                        <div class="output-container" style="border: 1px solid #d1d1d1; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
-                            <div class="output-title" style="font-weight: bold; margin-bottom: 10px;">Compatibility Assessment:</div>
+                        <div class="output-container">
+                            <div class="output-title">Compatibility Assessment:</div>
                             <p>Output will be displayed here after comparison.</p>
                         </div>
                         """,

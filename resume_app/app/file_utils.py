@@ -147,6 +147,8 @@ def convert_to_html_table(json_data: dict) -> str:
 
     table_html += "</table>"
     return table_html
+
+
 def parse_nested_json_to_html_table(json_data):
     """
     Parse the given JSON into an HTML table.
@@ -159,18 +161,8 @@ def parse_nested_json_to_html_table(json_data):
     """
     try:
         # Start the HTML table
-        html = """
-        <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
-            <thead>
-                <tr>
-                    <th>Component</th>
-                    <th>Job Description</th>
-                    <th>Candidate</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-
+        html = "<table border='1' style='border-collapse: collapse; width: 50%; text-align: left;'>"
+        html += "<tr><th>Component</th><th>Job Description</th><th>Candidate</th></tr>"
         # Iterate through the JSON data and build table rows
         for key, value in json_data.items():
             if isinstance(value, dict):  # Handle nested dictionaries
@@ -190,10 +182,61 @@ def parse_nested_json_to_html_table(json_data):
                 """
 
         # Close the HTML table
-        html += """
-            </tbody>
-        </table>
-        """
+        html += "</table>"
         return html
     except Exception as e:
         raise ValueError(f"Error generating HTML table: {str(e)}")
+
+def main():
+    input_json = """
+    {
+        "Job Title": "Email Campaign Developer",
+        "Candidate Name": "Anuhya Siliveru",
+        "Total Years of Experience": {
+            "Required": "3 - 6 Years",
+            "Candidate": "9+ years"
+        },
+        "Key Skills": {
+            "Required": "Digital Marketing, Emarsys, excel, SQL",
+            "Candidate": "Spark, AWS, Snowflake, JIRA, Confluence, Python, Hive, Scala, Java, Struts, JavaScript, Ajax"
+        },
+        "Education": {
+            "Required": "Not Mentioned",
+            "Candidate": "Master of Science in Computers"
+        },
+        "Certifications": {
+            "Required": "Not Mentioned",
+            "Candidate": "Not Mentioned"
+        },
+        "Location": {
+            "Job": "Not Mentioned",
+            "Candidate": "Not Mentioned"
+        },
+        "Remote Eligible": {
+            "Required": "Not Mentioned",
+            "Candidate": "Not Mentioned"
+        },
+        "Salary": {
+            "Range": "Not Mentioned",
+            "Expected": "Not Mentioned"
+        },
+        "Responsibilities Match": "Candidate has extensive experience in software development and data management, but no specific experience in email campaign development.",
+        "Language Proficiency": {
+            "Required": "Not Mentioned",
+            "Candidate": "Not Mentioned"
+        },
+        "Cultural Fit Indicators": "Not Mentioned",
+        "Availability": {
+            "Required": "Not Mentioned",
+            "Candidate": "Not Mentioned"
+        },
+        "Resume Gaps": "None",
+        "Overall Match Percentage": "50%"
+    }
+    """
+    json_dict = json.loads(input_json)
+    html = parse_nested_json_to_html_table(json_dict)
+    print(html)
+
+if __name__ == "__main__":
+    main()
