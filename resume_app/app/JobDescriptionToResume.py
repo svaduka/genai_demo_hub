@@ -34,16 +34,7 @@ def compare_job_description_to_resume(job_description_text, resume_content):
         log_msg("Sending request to OpenAIChatClient.", level=logging.INFO)
         response = llm.get_response(**llm_args)
         log_msg("Received response from OpenAIChatClient.", level=logging.INFO)
-
-        # Parse response and convert to HTML table
-        log_msg("Parsing response JSON.", level=logging.INFO)
-        json_response = fu.parse_json(response)
-
-        log_msg("Converting JSON response to HTML table.", level=logging.INFO)
-        output_html = fu.parse_nested_json_to_html_table(json_response)
-
-        log_msg("Successfully generated HTML table for comparison.", level=logging.INFO)
-        return output_html
+        return response
 
     except Exception as e:
         # Log the exception with traceback
@@ -91,9 +82,17 @@ def load_job_description_to_resume():
                 log_msg("Compare button clicked.", level=logging.INFO)
                 try:
                     if job_description_text and resume_text:
-                        st.session_state["output"] = compare_job_description_to_resume(
-                            job_description_text, resume_text
-                        )
+                        json_response_str = compare_job_description_to_resume(job_description_text, resume_text)
+                        # Parse response and convert to HTML table
+                        log_msg("Parsing response JSON.", level=logging.INFO)
+                        json_response = fu.parse_json(json_response_str)
+
+                        log_msg("Converting JSON response to HTML table.", level=logging.INFO)
+                        output_html = fu.parse_nested_json_to_html_table(json_response)
+
+                        log_msg("Successfully generated HTML table for comparison.", level=logging.INFO)
+                        st.session_state["json_response_str"] = json_response_str
+                        st.session_state["output"] = output_html
                         st.session_state["jd_uploaded"] = (
                             job_description_file.name if job_description_file else "Manually Entered"
                         )
@@ -114,17 +113,34 @@ def load_job_description_to_resume():
             try:
                 # Display the comparison results as an HTML table
                 output_html = st.session_state.get("output", None)
+                json_response_str = st.session_state.get("json_response_str", None)
                 if output_html:
                     st.markdown(
                         f"""
                         <div class="output-container">
                             <div class="output-title">Compatibility Assessment:</div>
-                            {st.session_state.get("output", "Output will be displayed here after comparison.")}
+                            {output_html}
                         </div>
                         """,
                         unsafe_allow_html=True,
                     )
                     log_msg("Comparison results displayed successfully.", level=logging.INFO)
+                    # Generate downloadable files
+                    pdf_buffer = fu.json_to_pdf(json_response_str)
+                    docx_buffer = fu.json_to_docx(json_response_str)
+                    # Add download buttons
+                    st.download_button(
+                        label="Download as PDF",
+                        data=pdf_buffer,
+                        file_name="compatibility_assessment.pdf",
+                        mime="application/pdf",
+                    )
+                    st.download_button(
+                        label="Download as DOCX",
+                        data=docx_buffer,
+                        file_name="compatibility_assessment.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    )
                 else:
                     st.markdown(
                         """

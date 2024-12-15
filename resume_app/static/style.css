@@ -58,6 +58,8 @@ table {
 th, td {
     border: 1px solid #d1d1d1;
     padding: 8px;
+    word-wrap: break-word;
+    text-align: left;
 }
 
 th {
@@ -65,8 +67,16 @@ th {
     font-weight: bold;
 }
 
-/* Adjust column widths for better spacing */
-th, td {
-    word-wrap: break-word;
+/* Table Styling */
+table {
+    border-collapse: collapse;
+    width: 100%; /* Expands the table to take full width of the container */
     text-align: left;
+    margin-top: 10px;
+}
+tr, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: middle; /* Ensures text is vertically aligned */
+    text-align: right; /* Right-align all cell data */
 }
