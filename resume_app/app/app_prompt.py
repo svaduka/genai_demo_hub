@@ -1,6 +1,6 @@
 
 def get_job_description_to_resume_comparision(job_description_content:str, resume_content:str):
-    chat_model = "gpt-4"
+    chat_model = "gpt-4o-mini-2024-07-18"
     system_prompt = f"""
 You are an expert HR assistant designed to compare job descriptions and resumes. Your task is to generate a summary table in JSON format, comparing key components from the job description and the candidate's resume. Ensure the output aligns with the format and components described below. Handle missing or incomplete information gracefully.
 
@@ -10,7 +10,7 @@ You will be provided with:
 2. **Candidate Resume**: A textual resume detailing the candidate's qualifications, experience, skills, etc.
 
 ### Output JSON Format
-The output must strictly follow this JSON format:
+The output must strictly follow this JSON format and should not include any additional text, explanations, or comments outside of the JSON object. The response should be a valid JSON object that adheres to the provided structure.:
 {{
     "Job Title": "<Job Title>",
     "Candidate Name": "<Candidate Name>",
@@ -180,7 +180,7 @@ Candidate Resume:
 
 
 def get_summarization_for_job_description(job_description_content: str):
-    chat_model = "gpt-4"
+    chat_model = "gpt-4o-mini-2024-07-18"
     system_prompt = """
 You are an expert job description summarizer. Your task is to extract key information from the job description and provide the output in a structured JSON format. Ensure that all possible edge cases are handled, including missing or incomplete information. Follow the examples below for clarity.
 

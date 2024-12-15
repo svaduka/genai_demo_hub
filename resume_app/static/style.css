@@ -33,10 +33,12 @@
     padding: 10px;
     border-radius: 5px;
     background-color: #f9f9f9;
-    display: inline-block; /* Allows the container to grow with the content */
-    max-width: 100%; /* Ensures it doesn't exceed the parent container's width */
-    margin-top: 10px;
-    overflow-x: auto; /* Allows horizontal scrolling for large tables */
+    display: block;
+    width: 100%; /* Ensures the container spans the available width */
+    max-width: 100%; /* Prevents the container from exceeding its parent width */
+    margin: 10px auto;
+    overflow-x: auto; /* Adds horizontal scrolling for large content */
+    box-sizing: border-box; /* Includes padding and border in width calculation */
 }
 
 /* Output Title Styling */
@@ -48,7 +50,7 @@
 /* Table Styling */
 table {
     border-collapse: collapse;
-    width: auto; /* Adjusts the table width to its content */
+    width: 100%; /* Expands the table to take full width of the container */
     text-align: left;
     margin-top: 10px;
 }
@@ -61,4 +63,10 @@ th, td {
 th {
     background-color: #f2f2f2;
     font-weight: bold;
+}
+
+/* Adjust column widths for better spacing */
+th, td {
+    word-wrap: break-word;
+    text-align: left;
 }
