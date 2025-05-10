@@ -1,0 +1,82 @@
+/* styles.css */
+.css-18e3th9 {
+    background-color: #f4f4f4;
+}
+
+.css-1d391kg {
+    background-color: #ffffff;
+}
+
+.sidebar .sidebar-content {
+    padding: 10px;
+    background-color: #2E86C1;
+    color: white;
+}
+
+.sidebar .sidebar-content a {
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.sidebar .sidebar-content a:hover {
+    color: #d1e9ff;
+}
+.output-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Output Container Styling */
+.output-container {
+    border: 1px solid #d1d1d1;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: block;
+    width: 100%; /* Ensures the container spans the available width */
+    max-width: 100%; /* Prevents the container from exceeding its parent width */
+    margin: 10px auto;
+    overflow-x: auto; /* Adds horizontal scrolling for large content */
+    box-sizing: border-box; /* Includes padding and border in width calculation */
+}
+
+/* Output Title Styling */
+.output-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Table Styling */
+table {
+    border-collapse: collapse;
+    width: 100%; /* Expands the table to take full width of the container */
+    text-align: left;
+    margin-top: 10px;
+}
+
+th, td {
+    border: 1px solid #d1d1d1;
+    padding: 8px;
+    word-wrap: break-word;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Table Styling */
+table {
+    border-collapse: collapse;
+    width: 100%; /* Expands the table to take full width of the container */
+    text-align: left;
+    margin-top: 10px;
+}
+tr, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: middle; /* Ensures text is vertically aligned */
+    text-align: right; /* Right-align all cell data */
+}

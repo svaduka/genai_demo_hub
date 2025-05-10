@@ -160,3 +160,42 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# student_study_app specific ignores
+
+# Ignore compiled assets
+student_study_app/__pycache__/
+student_study_app/**/*.py[cod]
+
+# Ignore log files
+student_study_app/logs/
+student_study_app/*.log
+
+# Ignore static build outputs
+student_study_app/static_build/
+student_study_app/media/
+
+# Ignore database files
+student_study_app/*.sqlite3
+student_study_app/*.db
+
+# Ignore test results
+student_study_app/.pytest_cache/
+student_study_app/htmlcov/
+
+# Ignore virtual environments inside project
+student_study_app/.env/
+student_study_app/.venv/
+student_study_app/venv/
+student_study_app/env/
+
+# Ignore Jupyter Notebook checkpoints in project
+student_study_app/**/*.ipynb_checkpoints/
+
+# Ignore Streamlit cache
+student_study_app/.streamlit/
+
+# Ignore generated content
+student_study_app/generated_reports/
+student_study_app/output/
+student_study_app/.DS_Store
