@@ -162,6 +162,7 @@ cython_debug/
 #.idea/
 
 # student_study_app specific ignores
+student_study_app/output/
 
 # Ignore compiled assets
 student_study_app/__pycache__/
@@ -197,5 +198,6 @@ student_study_app/.streamlit/
 
 # Ignore generated content
 student_study_app/generated_reports/
-student_study_app/output/
 student_study_app/.DS_Store
+.DS_Store
+*.docx
