@@ -19,7 +19,8 @@ PARENTSQUARE_PASSWORD = os.getenv("PARENTSQUARE_PASSWORD")
 # URLs
 PARENTSQUARE_LOGIN_URL = os.getenv("PARENTSQUARE_LOGIN_URL")
 PARENTSQUARE_FEEDS_URL = os.getenv("PARENTSQUARE_FEEDS_URL")
-TEACHERS_LIST = os.getenv("TEACHERS_LIST","").split(",")
+TEACHERS_LIST = [t.strip() for t in os.getenv("TEACHERS_LIST", "").split(",") if t.strip()]
+LOOK_BACK_PERIOD = os.getenv("LOOK_BACK_PERIOD","1")
 
 # Proxy settings
 HTTP_PROXY = os.getenv("HTTP_PROXY")

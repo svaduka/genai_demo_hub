@@ -1,3 +1,5 @@
+import os
+from datetime import datetime, timedelta, timezone
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -11,7 +13,8 @@ from app.utils.load_secets import (
     PARENTSQUARE_PASSWORD,
     PARENTSQUARE_LOGIN_URL,
     PARENTSQUARE_FEEDS_URL,
-    TEACHERS_LIST
+    TEACHERS_LIST,
+    LOOK_BACK_PERIOD
 )
 
 class FeedScraper:
@@ -45,39 +48,94 @@ class FeedScraper:
             logger.error("Login failed. URL: %s", self.driver.current_url)
             raise Exception("Login failed")
 
-    def fetch_all_feeds(self):
-        logger.info("Fetching feeds...")
-        feeds = []
+    def _get_feed_page(self, page):
+        url = f"{self.urls['feeds_base']}?page={page}"
+        response = self.session.get(url)
+        if response.status_code != 200:
+            logger.warning(f"Page {page}: HTTP {response.status_code}")
+            return None
+        logger.info(f"Page {page}: Successfully fetched")
+        return BeautifulSoup(response.text, 'lxml')
+
+    def _parse_post(self, post, cutoff_date):
+        from_zone = timezone.utc
+
+        date_element = post.select_one("span.time-ago")
+        post_date = None
+        if date_element and date_element.has_attr("data-timestamp"):
+            post_date = datetime.fromisoformat(date_element["data-timestamp"])
+            if post_date < cutoff_date:
+                return None
+
+        author_element = post.select_one(".feed-metadata a.user-name")
+        subject_element = post.select_one("div.subject span[role=heading]")
+        expanded_element = post.select_one("div.expanded-text .description")
+        content_element = expanded_element or post.select_one("div.description")
+
+        if not author_element or not content_element:
+            logger.debug("Skipping post due to missing author or content")
+            return None
+
+        author = author_element.text.strip()
+        if TEACHERS_LIST != ["ALL"] and not any(teacher.lower() in author.lower() for teacher in TEACHERS_LIST):
+            logger.debug(f"Skipping post by {author} - not in TEACHERS_LIST")
+            return None
+        logger.debug(f"Found post by {author} - which are in TEACHERS_LIST {TEACHERS_LIST}")
+        content = content_element.get_text(strip=True)
+        subject = subject_element.text.strip() if subject_element else "No Subject"
+
+        return {
+            "author": author,
+            "subject": subject,
+            "content": content,
+            "post_date": post_date.astimezone().isoformat() if post_date else "Unknown"
+        }
+
+    def _collect_all_posts(self, cutoff_date):
         page = 1
+        all_posts = []
         while True:
-            url = f"{self.urls['feeds_base']}?page={page}"
-            r = self.session.get(url)
-            if r.status_code != 200:
-                logger.warning(f"Page {page}: HTTP {r.status_code}")
+            soup = self._get_feed_page(page)
+            if not soup:
                 break
-            soup = BeautifulSoup(r.text, 'lxml')
+
             posts = soup.select("div.feed-show.feed-main.feed-box")
             logger.info(f"Page {page}: Found {len(posts)} posts")
+
             for post in posts:
-                author_element = post.select_one(".feed-metadata a.user-name")
-                if author_element and (TEACHERS_LIST == ["ALL"] or any(teacher.lower() in author_element.text.lower() for teacher in TEACHERS_LIST)):
-                    content_element = post.select_one('div.description, div.expanded-text')
-                    content = content_element.text.strip() if content_element else "No Content Found"
-                    feeds.append({'author': author_element.text.strip(), 'content': content})
-                    found_teacher_post = True
-                    break
+                parsed = self._parse_post(post, cutoff_date)
+                if parsed:
+                    all_posts.append(parsed)
+
             next_link = soup.select_one('li.next a[rel=next]')
             if not next_link:
+                logger.info("No more pages to fetch.")
                 break
             page += 1
+        return all_posts
+
+    def fetch_all_feeds(self):
+        logger.info("Fetching feeds...")
+        try:
+            look_back_weeks = int(LOOK_BACK_PERIOD)
+            if look_back_weeks <= 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            logger.warning("Invalid LOOK_BACK_PERIOD. Defaulting to 1 week.")
+            look_back_weeks = 1
+        cutoff_date = datetime.now(timezone.utc) - timedelta(weeks=look_back_weeks)
+        logger.info(f"Filtering posts after: {cutoff_date.isoformat()}")
+
+        feeds = self._collect_all_posts(cutoff_date)
 
         output_dir = Path(__file__).resolve().parent.parent.parent / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_file = output_dir / "feeds.json"
+
         import json
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(feeds, f, indent=2)
-        logger.info(f"Saved feeds to {output_file}")
+        logger.info(f"Saved {len(feeds)} feeds to {output_file}")
         return feeds
 
     def close(self):
