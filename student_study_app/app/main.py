@@ -8,7 +8,8 @@ from app.utils.load_secets import (
     PARENTSQUARE_USERNAME,
     PARENTSQUARE_PASSWORD,
     DATA_DIRECTORY,
-    OUTPUT_DIRECTORY
+    OUTPUT_DIRECTORY,
+    CURRENT_GRADE
 )
 from app.scraper.feed_scraper import FeedScraper
 from app.processor.openai_processor import OpenAIProcessor
@@ -30,23 +31,16 @@ def collect_feeds(scraper):
     logger.info(f"Collected {len(feeds)} feeds.")
     return feeds
 
-def extract_topics_from_feeds(openai_proc, feeds):
-    logger.info("Extracting topics from collected feeds...")
-    all_text = "\n".join([f["content"] for f in feeds])
-    topics_json = openai_proc.extract_topics(all_text)
-    logger.info("Extracted topics: %s", topics_json)
-    return topics_json
 
-def generate_material(doc_gen, topics_json):
-    logger.info("Generating weekly study material...")
-    doc_gen.generate_week_material(topics_json)
+def generate_material(doc_gen, openai_proc, feeds):
+    logger.info("Generating weekly study material from raw feeds...")
+    doc_gen.generate_week_material(openai_proc, feeds,CURRENT_GRADE)
     logger.info("Material generation complete.")
 
 def main():
     scraper, openai_proc, doc_gen = initialize_components()
     feeds = collect_feeds(scraper)
-    topics_json = extract_topics_from_feeds(openai_proc, feeds)
-    generate_material(doc_gen, topics_json)
+    generate_material(doc_gen, openai_proc, feeds)
 
 if __name__ == "__main__":
     main()

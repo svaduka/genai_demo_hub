@@ -4,35 +4,48 @@ from app.utils.logger import logger
 from app.utils.load_secets import OPENAI_API_KEY
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-multi_shot_prompt = """
-You are a highly accurate educational assistant tasked with parsing long-form weekly school updates (often exceeding 3000 words) into structured JSON, suitable for academic tracking and syllabus generation.
 
-Your job is to extract all meaningful educational content and teacher communications for a 3rd-grade student from a teacher’s newsletter, announcement, or weekly feed post.
-
-You must generate all the content without missing any information in the output.
+educational_multi_shot_prompt = """
+You are an expert educational content generator for CMS (Charlotte-Mecklenburg Schools). Given a subject and topic text, extract and organize learning material into a strict JSON structure with clarity for students and educators. Ensure that all topics mentioned in the input are covered comprehensively.
 
 -----------------------
-📌 TASK REQUIREMENTS
+📋 OUTPUT FORMAT (JSON)
 -----------------------
 
-Given the text below, generate a JSON structure with the following keys:
-
-1. "subjects": A dictionary where:
-   - Each key is the name of a subject (e.g., "Math", "Science", "Reading", "Writing", "Social Studies", "Grammar", "Vocabulary", "Spelling", "Art", "Physical Education", etc.).
-   - Each value is a list of **topics** (i.e., lessons, concepts, skills, activities) covered for that subject during the week. Include worksheet names, activity types, page numbers, and specific goals mentioned by the teacher.
-
-   ❗️ If subjects are mentioned implicitly (e.g., "Today we worked on long division" → Math), include them accurately.
-   ❗️ Ensure **no subjects or topics are missed**, even if the structure in the text is inconsistent or interleaved.
-
-2. "important_notes": A list of all major messages, administrative updates, reminders, behavior or health-related notes, test/quiz info, deadlines, or parent instructions not tied to a subject. Include:
-   - Field trip notices
-   - Testing dates
-   - Classroom policies
-   - Absence policies
-   - Materials needed
-   - Special events
-   - PowerSchool or grade-related updates
-   - Teacher personal messages to parents
+{{
+  "subject_name": "<Subject>",
+  "topic_name": "<Reworded concise topic name>",
+  "section_1_is_table": true | false,
+  "section_1_name": "Reading Material",
+  "section_1_content": {{
+    "current_grade": "...", 
+    "next_grade": "..."
+  }} OR [
+    {{"name": "...", "meaning": "...", "example": "..."}},
+    ...
+  ],
+  "section_2_is_table": true | false,
+  "section_2_name": "Real World Examples",
+  "section_2_content": {{
+    "current_grade": "...", 
+    "next_grade": "..."
+  }} OR [
+    {{"name": "...", "meaning": "...", "example": "..."}},
+    ...
+  ],
+  "section_3_is_table": false,
+  "section_3_name": "Quizzes",
+  "section_3_content": {{
+    "current_grade": [
+      {{"question": "...", "answer": "..."}},
+      ...
+    ],
+    "next_grade": [
+      {{"question": "...", "answer": "..."}},
+      ...
+    ]
+  }}
+}}
 
 -----------------------
 OUTPUT INSTRUCTIONS
@@ -41,132 +54,102 @@ OUTPUT INSTRUCTIONS
 - Do not use markdown formatting. Do not wrap the response in triple backticks or any other symbols.
 - Only return the JSON object. Do not include explanations, comments, or extra text.
 - Ensure the JSON is directly parsable by Python's json.loads().
+- Derive subject and topic more clearly from the context.
+- Use general category names like "Basic Algebra" as subject names.
+- Use concise descriptors like "Understanding Variables and Expressions" as topic names.
 - Normalize subject names with the first letter capitalized.
-- If no items exist in a section, return it as an empty dictionary or list.
 -----------------------
-✍️ INPUT TEXT:
------------------------
-
-{text}
-"""
-
-steam_multi_shot_prompt = """
-You are an expert educational content generator working for CMS (Charlotte-Mecklenburg Schools). Given a paragraph or topic description, your job is to identify if it's educational, and produce very detailed structured material for instructional use.
-
-Your output must include comprehensive student material suitable for 3rd to 5th graders, diverse real-world examples including edge-case scenarios, multi-level quizzes (basic, intermediate, challenge) with explanations, and thorough coverage of the topic including edge cases in both explanation and examples.
-
------------------------
-✅ OUTPUT GUIDELINES
+📌 SPECIAL RULES
 -----------------------
 
-- Output must be a raw JSON object.
-- Do not use markdown formatting. Do not wrap the response in triple backticks or any other symbols.
-- Only return the JSON object. Do not include explanations, comments, or extra text.
-- Ensure the JSON is directly parsable by Python's json.loads().
+1. If the topic relates to vocabulary or grammar keywords, then:
+   - section_1_is_table = true
+   - section_2_is_table = true
+   - section_3_is_table = false
+   - Generate table entries for name, meaning, and example. Use definitions from the input if present, otherwise generate.
 
-Return the following structure:
+2. If not vocabulary/grammar-related:
+   - Provide clear written paragraphs for section_1_content and section_2_content for the current grade and next grade with very precisely exhaustive list of materials for the students, examples, and quizes which will cover all the scenarios
 
-{{
-  "is_educational": true,
-  "domain": "Science" | "Technology" | "Engineering" | "Arts" | "Math" | "Social Studies" | "Health" | "General",
-  "student_friendly_explanation": "Very detailed explanation suitable for 3rd to 5th graders",
-  "reading_material": "Long-form material that explains the topic from first principles, with diagrams (describe them), definitions, and use cases",
-  "real_world_examples": ["diverse and edge-case scenarios"],
-  "quiz": [
-    {{
-      "level": "basic" | "intermediate" | "challenge",
-      "question": "string",
-      "answer": "string",
-      "explanation": "Explain why the answer is correct"
-    }}
-  ],
-  "youtube_links": ["https://youtube.com/...", "..."],
-  "image_ideas": ["description of image 1", "description of image 2"]
-}}
+3. Section_3 should always include quiz questions and answers for both current and next grade levels.
+4. If identified multiple subjects or Topic Name for the same subject or different subject extract the content as a seperate JSON content and embedded as multiple JSON Objects
+5. Always ensure the "subject_name" and "topic_name" fields are uniquely defined. Use category-level names like "Basic Algebra" instead of vague or redundant names (e.g., prefer "Basic Algebra" over "Math: Variables and Expressions"). Use "Understanding Variables and Expressions" for topic_name if the input discusses those ideas. Ensure the names are reusable for grouping.
 
-If it is NOT educational in nature, return:
+6. You must extract and generate educational content for all relevant topics from the input text without skipping any part. Ensure comprehensive study material coverage for every topic, including detailed reading material, real-world examples, and quizzes where appropriate.
 
-{{
-  "is_educational": false,
-  "topic": "Concise topic title or label",
-  "message_summary": "Brief summary of the main message",
-  "intended_audience": "Students" | "Parents" | "Teachers" | "General",
-  "action_items": ["action step 1", "action step 2"]
-}}
+7. If the input contains a topic or multiple topics, extract and generate topic-specific educational material for each one.
 
+8. If the input is already written as reading material, use it as-is for "section_1_content" and supplement with additional material.
+
+9. If the reading material contains links (e.g., to PDFs, videos), retain those links exactly and add them to the appropriate section without modification.
+
+10. If the input is reading material, intelligently infer and populate the "subject_name" and "topic_name" fields based on the context.
+
+11. If the input includes vocabulary content or tables, preserve the vocabulary data exactly and return it in structured JSON format, ensuring nothing is omitted.
 -----------------------
-✍️ INPUT TEXT:
+✍️ INPUT
 -----------------------
 
-{text}
+Topic Description: {{text}}
+Grade: {{grade}}
+
+Also, intelligently identify the subject name based on the topic content and include it as "subject_name" in the JSON.
+
+If the input contains multiple topics or multiple subjects, split and generate a separate JSON object for each topic.
+
+If the input is not relevant to any academic or educational learning topic, return an empty JSON object like this: {{}} and take no further action.
+
+Always return one or more top-level JSON objects. No lists or extra wrapping.
+
+Each object MUST include a boolean key "is_educational" to clearly indicate whether the topic is educationally relevant.
+If it is not, set "is_educational": false and return the object with no additional content fields.
 """
 
 class OpenAIProcessor:
 
-    def generate_steam_content(self, text: str) -> str:
-        logger.info("Generating educational content for topic input")
-        prompt = steam_multi_shot_prompt.format(text=text)
-        response = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a CMS-aligned assistant that creates structured STEAM learning materials."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            model="gpt-4o",
-            temperature=0.5
-        )
+    def generate_educational_content(self, text: str, grade: str) -> list:
+        logger.info("Generating educational content for topic preview: %s", text[:50])
+        prompt = educational_multi_shot_prompt.format(text=text, grade=grade)
+        response_content = self._build_completion(prompt)
+        return self._parse_json_response(response_content, fallback_topic=text)
+
+    def _build_completion(self, prompt: str) -> str:
         try:
-            content = response.choices[0].message.content.strip()
-            json_preview = json.loads(content)
-            logger.info(f"Received content for domain: {json_preview.get('domain', 'Unknown')}")
-        except Exception as e:
-            logger.warning(f"Failed to parse JSON or extract domain: {e}")
-        return response.choices[0].message.content.strip()
-
-    def extract_topics(self, text: str) -> dict:
-        import textwrap
-        chunk_size = 5000
-        text_chunks = textwrap.wrap(text, chunk_size, break_long_words=False, replace_whitespace=False)
-        logger.info(f"Processing {len(text_chunks)} chunk(s) of input text")
-        aggregated_subjects = {}
-        aggregated_notes = set()
-
-        for chunk in text_chunks:
             response = client.chat.completions.create(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a helpful assistant that returns structured syllabus and notes in valid JSON format."
+                        "content": "You are a CMS-aligned assistant that returns educational content in strict JSON format."
                     },
                     {
                         "role": "user",
-                        "content": multi_shot_prompt.format(text=chunk)
+                        "content": prompt
                     }
                 ],
                 model="gpt-4o",
-                temperature=0.3
+                temperature=0.5
             )
-            parsed = json.loads(response.choices[0].message.content)
-            subjects = parsed.get("subjects", {})
-            logger.debug(f"Parsed subjects: {list(subjects.keys())}")
-            for subj, topics in subjects.items():
-                if subj not in aggregated_subjects:
-                    aggregated_subjects[subj] = set()
-                aggregated_subjects[subj].update(topics)
-            for note in parsed.get("important_notes", []):
-                aggregated_notes.add(json.dumps(note) if isinstance(note, dict) else str(note))
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error("OpenAI completion failed: %s", e)
+            return ""
 
-        # Convert sets back to lists
-        final_subjects = {k: list(v) for k, v in aggregated_subjects.items()}
-        final_notes = list(aggregated_notes)
+    def _parse_json_response(self, content: str, fallback_topic: str = "") -> list:
+        results = []
+        try:
+            json_blocks = content.split("\n}\n{")
+            for i, block in enumerate(json_blocks):
+                if not block.strip().startswith("{"):
+                    block = "{" + block
+                if not block.strip().endswith("}"):
+                    block = block + "}"
+                parsed = json.loads(block)
+                if parsed.get("is_educational", False):
+                    logger.info("Parsed JSON with topic: %s", parsed.get("topic_name", fallback_topic[:30]))
+                    results.append(parsed)
+                else:
+                    logger.info("Skipped non-educational block #%d", i + 1)
+        except Exception as e:
+            logger.error("Failed to parse multiple JSON responses: %s", e)
 
-        logger.info(f"Extracted {len(final_subjects)} subject(s) and {len(final_notes)} note(s)")
-        return {
-            "subjects": final_subjects,
-            "important_notes": final_notes
-        }
+        return results

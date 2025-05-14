@@ -65,6 +65,7 @@ class FeedScraper:
         if date_element and date_element.has_attr("data-timestamp"):
             post_date = datetime.fromisoformat(date_element["data-timestamp"])
             if post_date < cutoff_date:
+                logger.info("Skipping post with date %s before cutoff %s", post_date.isoformat(), cutoff_date.isoformat())
                 return None
 
         author_element = post.select_one(".feed-metadata a.user-name")
@@ -94,7 +95,8 @@ class FeedScraper:
     def _collect_all_posts(self, cutoff_date):
         page = 1
         all_posts = []
-        while True:
+        should_stop = False
+        while not should_stop:
             soup = self._get_feed_page(page)
             if not soup:
                 break
@@ -104,8 +106,20 @@ class FeedScraper:
 
             for post in posts:
                 parsed = self._parse_post(post, cutoff_date)
-                if parsed:
-                    all_posts.append(parsed)
+                if parsed is None:
+                    # If a post is skipped due to being before the cutoff date, stop fetching
+                    date_element = post.select_one("span.time-ago")
+                    if date_element and date_element.has_attr("data-timestamp"):
+                        post_date = datetime.fromisoformat(date_element["data-timestamp"])
+                        if post_date < cutoff_date:
+                            logger.info("Encountered post older than cutoff. Stopping feed collection.")
+                            should_stop = True
+                            break
+                    continue
+                all_posts.append(parsed)
+
+            if should_stop:
+                break
 
             next_link = soup.select_one('li.next a[rel=next]')
             if not next_link:
