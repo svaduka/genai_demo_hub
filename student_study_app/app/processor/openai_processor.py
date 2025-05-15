@@ -6,45 +6,40 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 educational_multi_shot_prompt = """
-You are an expert educational content generator for CMS (Charlotte-Mecklenburg Schools). Given a subject and topic text, extract and organize learning material into a strict JSON structure with clarity for students and educators. Ensure that all topics mentioned in the input are covered comprehensively.
+You are an expert educational content generator for CMS (Charlotte-Mecklenburg Schools). Given a JSON input with content, grade, author, and date, extract and organize learning material into a strict JSON structure with clarity for students and educators. Ensure that all topics mentioned in the input are covered comprehensively.
 
 -----------------------
 📋 OUTPUT FORMAT (JSON)
 -----------------------
 
 {{
-  "subject_name": "<Subject>",
-  "topic_name": "<Reworded concise topic name>",
-  "section_1_is_table": true | false,
-  "section_1_name": "Reading Material",
-  "section_1_content": {{
-    "current_grade": "...", 
-    "next_grade": "..."
-  }} OR [
-    {{"name": "...", "meaning": "...", "example": "..."}},
-    ...
+  "subject_name": "<Subject Name>",
+  "teacher_name": "<Teacher Name or 'Class Teacher'>",
+  "date": "<Date in YYYY-MM-DD format or blank>",
+  "topics": [
+    {{
+      "topic_name": "<Reworded concise topic name>",
+      "section_1_is_table": true | false,
+      "section_1_name": "Reading Material",
+      "section_1_content": "Detailed study material in multiple paragraphs covering all relevant aspects of the topic.",
+      "section_2_is_table": true | false,
+      "section_2_name": "Real World Examples",
+      "section_2_content": "At least five meaningful real-world examples that illustrate the topic.",
+      "section_3_is_table": false,
+      "section_3_name": "Quizzes",
+      "section_3_content": {{
+        "current_grade": [
+          {{"question": "...", "answer": "..."}},
+          ...
+        ],
+        "next_grade": [
+          {{"question": "...", "answer": "..."}},
+          ...
+        ]
+      }}
+    }}
   ],
-  "section_2_is_table": true | false,
-  "section_2_name": "Real World Examples",
-  "section_2_content": {{
-    "current_grade": "...", 
-    "next_grade": "..."
-  }} OR [
-    {{"name": "...", "meaning": "...", "example": "..."}},
-    ...
-  ],
-  "section_3_is_table": false,
-  "section_3_name": "Quizzes",
-  "section_3_content": {{
-    "current_grade": [
-      {{"question": "...", "answer": "..."}},
-      ...
-    ],
-    "next_grade": [
-      {{"question": "...", "answer": "..."}},
-      ...
-    ]
-  }}
+  "is_educational": true
 }}
 
 -----------------------
@@ -55,54 +50,151 @@ OUTPUT INSTRUCTIONS
 - Only return the JSON object. Do not include explanations, comments, or extra text.
 - Ensure the JSON is directly parsable by Python's json.loads().
 - Derive subject and topic more clearly from the context.
-- Use general category names like "Basic Algebra" as subject names.
+- Use unique subject names like "Understanding Variable" as subject names.
 - Use concise descriptors like "Understanding Variables and Expressions" as topic names.
 - Normalize subject names with the first letter capitalized.
+- Include teacher name from input or use "Class Teacher" if missing.
+- Include date from input or leave blank if missing.
+- Nest multiple topics under the "topics" array within the subject object.
+- If multiple subjects are present, return multiple top-level JSON objects, one per subject.
+- Preserve vocabulary entries or links exactly.
 -----------------------
 📌 SPECIAL RULES
 -----------------------
 
-1. If the topic relates to vocabulary or grammar keywords, then:
-   - section_1_is_table = true
-   - section_2_is_table = true
-   - section_3_is_table = false
-   - Generate table entries for name, meaning, and example. Use definitions from the input if present, otherwise generate.
+1. Ignore non-educational content completely. If no learning content is found, return a single object with {{"is_educational": false}} and nothing else.
 
-2. If not vocabulary/grammar-related:
-   - Provide clear written paragraphs for section_1_content and section_2_content for the current grade and next grade with very precisely exhaustive list of materials for the students, examples, and quizes which will cover all the scenarios
+2. For educational content:
+   - Identify the subject based on topic and assign a unique subject name (e.g., "Understanding Variable", not "Understanding Variables and Expressions").
+   - If multiple topics are found within a subject, return a separate topic block for each under the same subject.
 
-3. Section_3 should always include quiz questions and answers for both current and next grade levels.
-4. If identified multiple subjects or Topic Name for the same subject or different subject extract the content as a seperate JSON content and embedded as multiple JSON Objects
-5. Always ensure the "subject_name" and "topic_name" fields are uniquely defined. Use category-level names like "Basic Algebra" instead of vague or redundant names (e.g., prefer "Basic Algebra" over "Math: Variables and Expressions"). Use "Understanding Variables and Expressions" for topic_name if the input discusses those ideas. Ensure the names are reusable for grouping.
+3. Each JSON block should follow this nested format:
 
-6. You must extract and generate educational content for all relevant topics from the input text without skipping any part. Ensure comprehensive study material coverage for every topic, including detailed reading material, real-world examples, and quizzes where appropriate.
+{{
+  "subject_name": "<Subject Name>",
+  "teacher_name": "<Teacher Name or 'Class Teacher'>",
+  "date": "<Date in YYYY-MM-DD format or blank>",
+  "topics": [
+    {{
+      "topic_name": "...",
+      "section_1_is_table": true | false,
+      "section_1_name": "Reading Material",
+      "section_1_content": "Detailed study material in multiple paragraphs covering all relevant aspects of the topic.",
+      "section_2_is_table": true | false,
+      "section_2_name": "Real World Examples",
+      "section_2_content": "At least five meaningful real-world examples that illustrate the topic.",
+      "section_3_is_table": false,
+      "section_3_name": "Quizzes",
+      "section_3_content": {{
+        "current_grade": [...],
+        "next_grade": [...]
+      }}
+    }}
+  ],
+  "is_educational": true
+}}
 
-7. If the input contains a topic or multiple topics, extract and generate topic-specific educational material for each one.
+4. Preserve vocabulary entries or links exactly. If the content has a vocabulary list, return it in table format under appropriate section content.
 
-8. If the input is already written as reading material, use it as-is for "section_1_content" and supplement with additional material.
+5. If the input contains multiple subjects or multiple topic groups, return multiple top-level JSON objects—one per subject.
 
-9. If the reading material contains links (e.g., to PDFs, videos), retain those links exactly and add them to the appropriate section without modification.
-
-10. If the input is reading material, intelligently infer and populate the "subject_name" and "topic_name" fields based on the context.
-
-11. If the input includes vocabulary content or tables, preserve the vocabulary data exactly and return it in structured JSON format, ensuring nothing is omitted.
+6. Always return only JSON objects. No markdown, no explanation, no extra symbols or arrays wrapping JSON blocks.
 -----------------------
 ✍️ INPUT
 -----------------------
 
-Topic Description: {{text}}
-Grade: {{grade}}
+Input JSON:
+{{
+  "content": {{text}},
+  "grade": {{grade}},
+  "author": "Teacher name here",
+  "date": "2025-05-14"
+}}
 
-Also, intelligently identify the subject name based on the topic content and include it as "subject_name" in the JSON.
+-----------------------
+📚 EXAMPLES
+-----------------------
 
-If the input contains multiple topics or multiple subjects, split and generate a separate JSON object for each topic.
+✅ Example Input: Reading Practice
+{{
+  "content": "If you are looking for a way to support your child at home with EOG style questions and passages I have a great resource for you! Go to readtheory.org...",
+  "grade": "3rd Grade",
+  "author": "Rebecca Anastos",
+  "date": "2025-05-09"
+}}
 
-If the input is not relevant to any academic or educational learning topic, return an empty JSON object like this: {{}} and take no further action.
+✅ Output:
+{{
+  "subject_name": "Reading Comprehension",
+  "teacher_name": "Rebecca Anastos",
+  "date": "2025-05-09",
+  "topics": [
+    {{
+      "topic_name": "Improving Reading Stamina",
+      "section_1_is_table": false,
+      "section_1_name": "Reading Material",
+      "section_1_content": "Practice reading short passages daily with a focus on identifying main ideas and supporting details. Explore longer passages with multi-step inference questions, and practice note-taking strategies.",
+      "section_2_is_table": false,
+      "section_2_name": "Real World Examples",
+      "section_2_content": "Use newspaper articles to practice summarizing. Compare main ideas across multiple news stories. Read book reviews to understand opinions. Analyze advertisements for persuasive language. Discuss news reports in class.",
+      "section_3_is_table": false,
+      "section_3_name": "Quizzes",
+      "section_3_content": {{
+        "current_grade": [
+          {{"question": "What is the main idea of a paragraph?", "answer": "It tells what the paragraph is mostly about."}}
+        ],
+        "next_grade": [
+          {{"question": "What strategy helps locate key details?", "answer": "Underline supporting sentences in the passage."}}
+        ]
+      }}
+    }}
+  ],
+  "is_educational": true
+}}
 
-Always return one or more top-level JSON objects. No lists or extra wrapping.
+✅ Example Input: Vocabulary
+{{
+  "content": "ideal-something that is perfect, advertise-to give info, secluded-a place that is quiet...",
+  "grade": "3rd Grade",
+  "author": "Rebecca Anastos",
+  "date": "2025-05-08"
+}}
 
-Each object MUST include a boolean key "is_educational" to clearly indicate whether the topic is educationally relevant.
-If it is not, set "is_educational": false and return the object with no additional content fields.
+✅ Output:
+{{
+  "subject_name": "Vocabulary Development",
+  "teacher_name": "Rebecca Anastos",
+  "date": "2025-05-08",
+  "topics": [
+    {{
+      "topic_name": "Vocabulary Word List",
+      "section_1_is_table": true,
+      "section_1_name": "Reading Material",
+      "section_1_content": [
+        {{"name": "ideal", "meaning": "something that is perfect", "example": "This vacation is ideal for relaxing."}},
+        {{"name": "secluded", "meaning": "quiet and out of sight", "example": "The cabin was in a secluded area."}}
+      ],
+      "section_2_is_table": true,
+      "section_2_name": "Real World Examples",
+      "section_2_content": [
+        {{"name": "advertise", "meaning": "announce or promote", "example": "They advertise shoes on TV."}},
+        {{"name": "promote", "meaning": "support or encourage", "example": "Schools promote reading every day."}},
+        {{"name": "market", "meaning": "to sell or trade", "example": "Farmers market fresh produce."}},
+        {{"name": "brand", "meaning": "a type of product made by a company", "example": "Nike is a popular brand."}},
+        {{"name": "campaign", "meaning": "a planned series of actions", "example": "The campaign raised awareness."}}
+      ],
+      "section_3_is_table": false,
+      "section_3_name": "Quizzes",
+      "section_3_content": {{
+        "current_grade": [
+          {{"question": "What does 'jovial' mean?", "answer": "Always laughing and in a good mood"}}
+        ],
+        "next_grade": []
+      }}
+    }}
+  ],
+  "is_educational": true
+}}
 """
 
 class OpenAIProcessor:
@@ -145,7 +237,7 @@ class OpenAIProcessor:
                     block = block + "}"
                 parsed = json.loads(block)
                 if parsed.get("is_educational", False):
-                    logger.info("Parsed JSON with topic: %s", parsed.get("topic_name", fallback_topic[:30]))
+                    logger.info("Parsed JSON with topic: %s", parsed.get("topics", [{"topic_name": fallback_topic[:30]}])[0].get("topic_name", fallback_topic[:30]))
                     results.append(parsed)
                 else:
                     logger.info("Skipped non-educational block #%d", i + 1)
