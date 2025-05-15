@@ -1,8 +1,9 @@
-from docx import Document
-from app.utils.logger import logger
+import logging
 import os
-from app.processor.openai_processor import OpenAIProcessor
 import json
+from docx import Document
+from app.utils.logger import logger, log_msg
+from app.processor.openai_processor import OpenAIProcessor
 
 class DocumentGenerator:
     def __init__(self, output_dir):
@@ -11,7 +12,7 @@ class DocumentGenerator:
         self.quiz_answers = []
 
     def generate_week_material(self, openai_proc, feeds, current_grade, week_num=1):
-        logger.info("Generating document for week %s", week_num)
+        log_msg(f"Generating document for week {week_num}", level=logging.INFO)
         subject_map = {}
         other_topics = []
         self.quiz_answers = []
@@ -60,7 +61,7 @@ class DocumentGenerator:
 #   "is_educational": true
 # }]
 # """
-        logger.info("Raw OpenAI results: %s", raw_results)
+        log_msg(f"Raw OpenAI results: {raw_results}", level=logging.INFO)
 
         # Normalize and zip with feeds
         results = []
@@ -75,7 +76,7 @@ class DocumentGenerator:
         elif isinstance(raw_results, list):
             results = raw_results
 
-        logger.info("Processing %d enriched results from OpenAI", len(results))
+        log_msg(f"Processing {len(results)} enriched results from OpenAI", level=logging.INFO)
 
         for feed, enriched_json in zip(feeds, results):
             if enriched_json.get("is_educational", False):
@@ -100,11 +101,11 @@ class DocumentGenerator:
         filename = os.path.join(self.output_dir, f"week{week_num}_material.docx")
         os.makedirs(self.output_dir, exist_ok=True)
         doc.save(filename)
-        logger.info("Saved material to %s", filename)
+        log_msg(f"Saved material to {filename}", level=logging.INFO)
         return filename
 
     def _add_subject_section(self, doc, subject, items):
-        logger.info("Adding subject section: %s", subject)
+        log_msg(f"Adding subject section: {subject}", level=logging.INFO)
         doc.add_heading(subject, level=1)
         for feed, enriched in items:
             self._add_topic_content(doc, feed, enriched, subject)
@@ -204,7 +205,7 @@ class DocumentGenerator:
 
     def _add_other_topics_section(self, doc, other_topics):
         if other_topics:
-            logger.info("Adding Other Topics section with %d entries", len(other_topics))
+            log_msg(f"Adding Other Topics section with {len(other_topics)} entries", level=logging.INFO)
             doc.add_heading("Other Topics", level=1)
             for topic in other_topics:
                 doc.add_paragraph(f"• {topic}", style="List Bullet")
@@ -216,7 +217,7 @@ class DocumentGenerator:
                 notes.append(feed["note"])
 
         if notes:
-            logger.info("Adding Important Notes section with %d notes", len(notes))
+            log_msg(f"Adding Important Notes section with {len(notes)} notes", level=logging.INFO)
             doc.add_heading("Important Notes", level=1)
             for note in notes:
                 doc.add_paragraph(f"• {note}", style="List Bullet")

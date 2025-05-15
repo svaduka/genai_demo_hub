@@ -19,3 +19,6 @@ def setup_logger(log_file='data/logs/app.log'):
     return logger
 
 logger = setup_logger()
+
+def log_msg(msg, level=logging.INFO):
+    logger.log(level, msg)

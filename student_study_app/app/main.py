@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import asyncio
@@ -16,18 +17,19 @@ from app.scraper.feed_scraper import FeedScraper
 from app.processor.openai_processor import OpenAIProcessor
 from app.generator.document_generator import DocumentGenerator
 from app.utils.logger import logger
+from app.utils.logger import log_msg
 
 import json
 
 def read_feeds():
     output_dir = Path(__file__).resolve().parent.parent / "output"
     filepath = os.path.join(output_dir, "feeds.json")
-    logger.info(f"Reading feeds from {filepath}")
+    log_msg(f"Reading feeds from {filepath}", level=logging.INFO)
     with open(filepath, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def initialize_components():
-    logger.info("Initializing components...")
+    log_msg("Initializing components...", level=logging.INFO)
     # scraper = FeedScraper()
     scraper = None
     openai_proc = OpenAIProcessor()
@@ -35,18 +37,18 @@ def initialize_components():
     return scraper, openai_proc, doc_gen
 
 def collect_feeds(scraper):
-    logger.info("Logging into ParentSquare and collecting feeds...")
+    log_msg("Logging into ParentSquare and collecting feeds...", level=logging.INFO)
     scraper.login()
     feeds = scraper.fetch_all_feeds()
     scraper.close()
-    logger.info(f"Collected {len(feeds)} feeds.")
+    log_msg(f"Collected {len(feeds)} feeds.", level=logging.INFO)
     return feeds
 
 
 def generate_material(doc_gen, openai_proc, feeds):
-    logger.info("Generating weekly study material from raw feeds...")
+    log_msg("Generating weekly study material from raw feeds...", level=logging.INFO)
     doc_gen.generate_week_material(openai_proc, feeds,CURRENT_GRADE)
-    logger.info("Material generation complete.")
+    log_msg("Material generation complete.", level=logging.INFO)
 
 def main():
     scraper, openai_proc, doc_gen = initialize_components()

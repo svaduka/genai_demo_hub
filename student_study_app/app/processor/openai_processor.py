@@ -1,6 +1,7 @@
 import json
+import logging
 from openai import OpenAI
-from app.utils.logger import logger
+from app.utils.logger import log_msg
 from app.utils.load_secets import OPENAI_API_KEY
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -200,7 +201,7 @@ Input JSON:
 class OpenAIProcessor:
 
     def generate_educational_content(self, text: str, grade: str) -> list:
-        logger.info("Generating educational content for topic preview: %s", text[:50])
+        log_msg(f"Generating educational content for topic preview: {text[:50]}")
         prompt = educational_multi_shot_prompt.format(text=text, grade=grade)
         response_content = self._build_completion(prompt)
         return self._parse_json_response(response_content, fallback_topic=text)
@@ -223,7 +224,7 @@ class OpenAIProcessor:
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            logger.error("OpenAI completion failed: %s", e)
+            log_msg(f"OpenAI completion failed: {e}", level=logging.ERROR)
             return ""
 
     def _parse_json_response(self, content: str, fallback_topic: str = "") -> list:
@@ -237,11 +238,11 @@ class OpenAIProcessor:
                     block = block + "}"
                 parsed = json.loads(block)
                 if parsed.get("is_educational", False):
-                    logger.info("Parsed JSON with topic: %s", parsed.get("topics", [{"topic_name": fallback_topic[:30]}])[0].get("topic_name", fallback_topic[:30]))
+                    log_msg(f"Parsed JSON with topic: {parsed.get('topics', [{'topic_name': fallback_topic[:30]}])[0].get('topic_name', fallback_topic[:30])}")
                     results.append(parsed)
                 else:
-                    logger.info("Skipped non-educational block #%d", i + 1)
+                    log_msg(f"Skipped non-educational block #{i + 1}")
         except Exception as e:
-            logger.error("Failed to parse multiple JSON responses: %s", e)
+            log_msg(f"Failed to parse multiple JSON responses: {e}", level=logging.ERROR)
 
         return results
