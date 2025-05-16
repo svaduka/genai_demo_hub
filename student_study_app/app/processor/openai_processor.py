@@ -263,7 +263,8 @@ class OpenAIProcessor:
         # log_msg(f"Prompt {prompt}")
         response_content = self._build_completion(prompt)
         log_msg(f"Response content : {response_content}")
-        return self._parse_json_response(response_content, fallback_topic=text)
+        return json.loads(response_content)
+        # return self._parse_json_response(response_content, fallback_topic=text)
 
     def _build_completion(self, prompt: str) -> str:
         try:

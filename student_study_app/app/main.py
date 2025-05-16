@@ -26,8 +26,8 @@ def read_feeds():
 
 def initialize_components():
     log_msg("Initializing components...", level=logging.INFO)
-    # scraper = FeedScraper()
-    scraper = None
+    scraper = FeedScraper()
+    # scraper = None
     openai_proc = OpenAIProcessor()
     doc_gen = DocumentGenerator(OUTPUT_DIRECTORY)
     return scraper, openai_proc, doc_gen
@@ -48,8 +48,8 @@ def generate_material(doc_gen, openai_proc, feeds):
 
 def main():
     scraper, openai_proc, doc_gen = initialize_components()
-    # feeds = collect_feeds(scraper)
-    feeds = read_feeds()
+    feeds = collect_feeds(scraper)
+    # feeds = read_feeds()
     generate_material(doc_gen, openai_proc, feeds)
 
 if __name__ == "__main__":
