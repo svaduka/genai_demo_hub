@@ -6,10 +6,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 
 from app.utils.load_secets import (
-    APP_ENV,
-    PARENTSQUARE_USERNAME,
-    PARENTSQUARE_PASSWORD,
-    DATA_DIRECTORY,
     OUTPUT_DIRECTORY,
     CURRENT_GRADE
 )
