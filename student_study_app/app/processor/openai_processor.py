@@ -14,10 +14,10 @@ INPUT FORMAT (list of objects):
 
 [
     {{{{
-        "author": "string (e.g., 'Rebecca Anastos')",
-        "subject": "string",
-        "content": "string",
-        "post_date": "ISO format datetime, e.g., '2025-05-08T15:00:00-04:00'"
+      "author": "string (e.g., 'Rebecca Anastos')",
+      "subject": "string",
+      "content": "string",
+      "post_date": "ISO format datetime, e.g., '2025-05-08T15:00:00-04:00'"
     }}}},
     ...
 ]
@@ -31,7 +31,13 @@ Your responsibilities:
 1. Ignore any feeds that are not educational (e.g., announcements about donations, celebrations, hats, countdowns).
 2. For each valid feed:
    - Set `subject_name` based on the feed topic (e.g., "Math Concepts", "Vocabulary Development"), Subject Name should be precise.
+   - Group all educational feeds under their corresponding subject using `subject_name`. If multiple feeds share the same subject (e.g., math topics like 'Area', 'Fractions', 'Elapsed Time'), they must be merged under a single `subject_name` with multiple `topic` entries.
+   - For each feed, create one or more `topic` blocks depending on the number of unique instructional areas it covers.
+   - If a single feed includes multiple instructional concepts within the same subject (e.g., 'Area, Perimeter, and Fractions'), split them into separate `topic` blocks such as 'Area', 'Perimeter', and 'Fractions'.
+   - Each topic must have its own reading material, real world examples, and quizzes.
+   - Final output should organize all related topics under a shared `subject_name`.
    - Create one or more `topic` blocks based on themes found in the content or group multiple feeds if they belong to same subject.
+   - If a feed includes multiple topics in a single subject (e.g., 'Area, Perimeter, and Fractions'), split it into distinct topic blocks such as 'Area', 'Perimeter', and 'Fractions'. Each topic must have its own reading material, examples, and quizzes. Group them under a shared subject_name.
    - For vocabulary: use `section_1_is_table: true`, with entries that include:
      - `name` (vocabulary word)
      - `meaning` (child-friendly definition)
@@ -69,7 +75,7 @@ OUTPUT FORMAT:
                 "section_3_is_table": false,
                 "section_3_name": "Quizzes",
                 "section_3_content": [
-                    {{{{ "question": "string", "answer": "string" }}}},
+                    {{{{"question": "string", "answer": "string" }}}},
                     ...
                 ]
             }}}}
@@ -93,6 +99,7 @@ For non-educational feeds, ignore feed
 4. Include at least 5 real-world examples in section 2 for valid educational topics.
 5. Vocabulary content must be in table format with "name", "meaning", and "example".
 6. Include both current and next grade quiz questions based on Bloom’s taxonomy (basic → application).
+7. Ouput should not include the input related information
 
 IMPORTANT: 
 - Do not include any explanations, examples, or descriptions in the response.
@@ -107,84 +114,134 @@ EXAMPLES
 
 INPUT:
 
-{{{{ 
-  "grade": "3",
-  "feeds": [{{{{feeds}}}}]
+{{{{
+    "feeds": [
+    {{{{
+      "author": "Rebecca Anastos",
+    "subject": "IMPORTANT- Thursday Folders- Scores",
+    "content": "Hello 3rd grade families,Happy Friday Eve! \u00a0Wanted to let you know about some things coming home in Communication Folders today:A packet that contains:Ayellow paperwith the EOY benchmark test scores (for iReady and MVPA) and the correlating EOG score predictions based on these scoresiReady score reportThe work paper your child used during the tests (if the paper is blank or there are no work papers attached, it means your child didn't use the paper to show work)A reflection sheet or card with a \"glow\" (something they were proud of or felt really confident about on the test) and a \"grow\" (something they want to work on or something they wish they knew more about for the actual EOG)Please review andsign and returnthe yellow paper; however, you may want to take a picture of the back of the yellow paper for ideas on how to help your child grow their skills at home.Have a wonderful rest of your day! \u00a0So close to the weekend!-Mrs. A",
+    "post_date": "2025-05-08T14:48:03-04:00"
+  }}}},
+        {{{{
+          "author": "Rebecca Anastos",
+            "subject": "Vocabulary",
+            "content": "Today's essential vocabulary words include 'ideal', 'advertise', 'secluded', 'jovial', 'queasy', and 'loaf'. Understanding these words will help enhance your communication skills.",
+            "post_date": "2025-05-08T15:00:00-04:00"
+        }}}},
+        {{{{
+          "author": "Ellen Stenzler Whitford",
+            "subject": "Math",
+            "content": "In this lesson, we will explore 'Area', 'Perimeter', and 'Fractions'. Understanding these concepts is crucial for solving problems and making connections to real-world scenarios.",
+            "post_date": "2025-05-11T10:00:00-04:00"
+        }}}}
+    ],
+    "grade": "3"
 }}}}
 
 EXPECTED OUTPUT:
 
 [
-  {{{{
-    "subject_name": "Math Concepts",
-    "teacher_name": "Ellen Stenzler Whitford",
-    "date": "2025-05-11",
-    "topics": [
-      {{{{
-        "topic_name": "Area, Perimeter, and Fractions",
-        "section_1_is_table": false,
-        "section_1_name": "Reading Material",
-        "section_1_content": "This topic covers area and perimeter calculations, the distributive property for arrays, time calculations, and understanding equivalent fractions. Area refers to the space inside a shape (calculated as length × width), while perimeter is the total distance around the shape (sum of all sides). The distributive property helps break multiplication into parts. Time skills include reading analog clocks and calculating elapsed time. Students also study fractions with visual models and number lines, including benchmarks like 1/2 = 2/4 = 4/8. These skills are essential for both current and higher-level math thinking.",
-        "section_2_is_table": false,
-        "section_2_name": "Real World Examples",
-        "section_2_content": "1. Measuring tiles to find how much area covers a kitchen floor.\n2. Calculating the amount of fencing for a backyard.\n3. Splitting a chocolate bar into equal parts to represent fractions.\n4. Determining time passed from 9:15 to 10:00 AM.\n5. Understanding why 2/4 of a pizza equals 1/2.\n6. Breaking 7 × 6 into (7×3) + (7×3) using the distributive property.\n7. Finding the area of a school desk.\n8. Drawing fractions on a number line.\n9. Using clocks to find how long a movie lasted.\n10. Estimating classroom perimeter using foot-long rulers.",
-        "section_3_is_table": false,
-        "section_3_name": "Quizzes",
-        "section_3_content": [
-          {{{{ "question": "How do you calculate the area of a rectangle?", "answer": "Multiply the length by the width" }}}},
-          {{{{ "question": "What is the perimeter of a shape with sides 5, 3, 5, 3?", "answer": "5 + 3 + 5 + 3 = 16" }}}},
-          {{{{ "question": "What is the distributive form of 6 × 7?", "answer": "(6 × 3) + (6 × 4)" }}}},
-          {{{{ "question": "If a clock shows 1:30 and class ends at 2:15, how long is left?", "answer": "45 minutes" }}}},
-          {{{{ "question": "What is an equivalent of 2/4?", "answer": "1/2" }}}},
-          {{{{ "question": "How can you show 3/6 on a number line?", "answer": "Mark 3 points out of 6 equal sections between 0 and 1" }}}},
-          {{{{ "question": "What does 'elapsed time' mean?", "answer": "The amount of time that has passed between two moments" }}}},
-          {{{{ "question": "What is the area of a 4 × 6 rectangle?", "answer": "24 square units" }}}}
-        ]
-      }}}}
-    ],
-    "is_educational": true
-  }}}},
-  {{{{
-    "subject_name": "Vocabulary Development",
-    "teacher_name": "Rebecca Anastos",
-    "date": "2025-05-08",
-    "topics": [
-      {{{{
-        "topic_name": "Essential Vocabulary Words",
-        "section_1_is_table": true,
-        "section_1_name": "Reading Material",
-        "section_1_content": [
-          {{{{ "name": "ideal", "meaning": "something that is perfect", "example": "This vacation is ideal for relaxing." }}}},
-          {{{{ "name": "advertise", "meaning": "to announce or promote", "example": "They advertise toys on TV." }}}},
-          {{{{ "name": "secluded", "meaning": "quiet and away from others", "example": "The cabin was in a secluded forest." }}}},
-          {{{{ "name": "jovial", "meaning": "always in a good mood and laughing", "example": "He is jovial and friendly to everyone." }}}},
-          {{{{ "name": "queasy", "meaning": "feeling sick to your stomach", "example": "She felt queasy on the bus." }}}},
-          {{{{ "name": "loaf", "meaning": "to spend time relaxing and doing nothing", "example": "I like to loaf around on Sundays." }}}},
-          {{{{ "name": "interview", "meaning": "to ask questions to learn something", "example": "She interviewed the mayor for her project." }}}}
+    {{{{
+        "subject_name": "Vocabulary Development",
+        "teacher_name": "Rebecca Anastos",
+        "date": "2025-05-08",
+        "topics": [
+            {{{{
+                "topic_name": "Essential Vocabulary Words",
+                "section_1_is_table": true,
+                "section_1_name": "Reading Material",
+                "section_1_content": [
+                    {{{{ "name": "ideal", "meaning": "something that is perfect", "example": "This vacation is ideal for relaxing." }}}},
+                    {{{{ "name": "advertise", "meaning": "to announce or promote", "example": "They advertise toys on TV." }}}},
+                    {{{{ "name": "secluded", "meaning": "quiet and away from others", "example": "The cabin was in a secluded forest." }}}},
+                    {{{{ "name": "jovial", "meaning": "always in a good mood and laughing", "example": "He is jovial and friendly to everyone." }}}},
+                    {{{{ "name": "queasy", "meaning": "feeling sick to your stomach", "example": "She felt queasy on the bus." }}}},
+                    {{{{ "name": "loaf", "meaning": "to spend time relaxing and doing nothing", "example": "I like to loaf around on Sundays." }}}}
+                ],
+                "section_2_is_table": false,
+                "section_2_name": "Real World Examples",
+                "section_2_content": "1. Using 'ideal' to describe weather for a picnic.\n2. Seeing advertisements on YouTube or billboards.\n3. Visiting a quiet, secluded cabin.\n4. Talking with jovial classmates.\n5. Feeling queasy after a roller coaster.\n6. Loafing on the couch after school.",
+                "section_3_is_table": false,
+                "section_3_name": "Quizzes",
+                "section_3_content": [
+                    {{{{ "question": "What does 'secluded' mean?", "answer": "A place that is quiet and private" }}}},
+                    {{{{ "question": "What does 'jovial' describe?", "answer": "Someone who is always cheerful" }}}},
+                    {{{{ "question": "What happens when you 'advertise'?", "answer": "You promote or announce something" }}}},
+                    {{{{ "question": "Use 'queasy' in a sentence.", "answer": "I felt queasy before the test" }}}},
+                    {{{{ "question": "What is the meaning of 'loaf'?", "answer": "To relax or do nothing" }}}}
+                ]
+            }}}}
         ],
-        "section_2_is_table": false,
-        "section_2_name": "Real World Examples",
-        "section_2_content": "1. Using 'ideal' to describe weather for a picnic.\n2. Seeing advertisements on YouTube or billboards.\n3. Visiting a quiet, secluded cabin.\n4. Talking with jovial classmates.\n5. Feeling queasy after a roller coaster.\n6. Loafing on the couch after school.\n7. Preparing for an interview with a school guest.",
-        "section_3_is_table": false,
-        "section_3_name": "Quizzes",
-        "section_3_content": [
-          {{{{ "question": "What does 'secluded' mean?", "answer": "A place that is quiet and private" }}}},
-          {{{{ "question": "What does 'jovial' describe?", "answer": "Someone who is always cheerful" }}}},
-          {{{{ "question": "What happens when you 'advertise'?", "answer": "You promote or announce something" }}}},
-          {{{{ "question": "Use 'queasy' in a sentence.", "answer": "I felt queasy before the test" }}}},
-          {{{{ "question": "What is the meaning of 'loaf'?", "answer": "To relax or do nothing" }}}},
-          {{{{ "question": "How would you use 'ideal'?", "answer": "A sunny day is ideal for a hike" }}}}
-        ]
-      }}}}
-    ],
-    "is_educational": true
-  }}}}
+        "is_educational": true
+    }}}},
+    {{{{
+        "subject_name": "Math Concepts",
+        "teacher_name": "Ellen Stenzler Whitford",
+        "date": "2025-05-11",
+        "topics": [
+            {{{{
+                "topic_name": "Area",
+                "section_1_is_table": false,
+                "section_1_name": "Reading Material",
+                "section_1_content": "Area is the space inside a shape. To find the area of a rectangle, multiply its length by its width. Understanding area helps in solving real-world problems like determining how much carpet is needed for a room.",
+                "section_2_is_table": false,
+                "section_2_name": "Real World Examples",
+                "section_2_content": "1. Calculating the area of a garden to determine how many plants can fit.\n2. Measuring the area of a wall to know how much paint is needed.\n3. Finding the area of a tablecloth to cover a dining table.\n4. Determining the area of a playground.\n5. Calculating the area of a parking lot to plan the number of cars it can hold.",
+                "section_3_is_table": false,
+                "section_3_name": "Quizzes",
+                "section_3_content": [
+                    {{{{ "question": "How do you calculate the area of a rectangle?", "answer": "Multiply the length by the width" }}}},
+                    {{{{ "question": "If a room is 5 meters long and 4 meters wide, what is its area?", "answer": "20 square meters" }}}},
+                    {{{{ "question": "What is the area of a square with sides of 3 meters?", "answer": "9 square meters" }}}},
+                    {{{{ "question": "Why is knowing the area important?", "answer": "It helps in planning and using space efficiently" }}}},
+                    {{{{ "question": "How can you find the area of a triangle?", "answer": "Multiply the base by the height and divide by 2" }}}}
+                ]
+            }}}},
+            {{{{
+                "topic_name": "Perimeter",
+                "section_1_is_table": false,
+                "section_1_name": "Reading Material",
+                "section_1_content": "Perimeter is the total distance around a shape. To find the perimeter of a rectangle, add up the lengths of all its sides. Knowing perimeter is useful for tasks like fencing a yard.",
+                "section_2_is_table": false,
+                "section_2_name": "Real World Examples",
+                "section_2_content": "1. Calculating the perimeter of a garden to buy enough fencing.\n2. Measuring the perimeter of a picture frame.\n3. Determining the perimeter of a sports field.\n4. Finding the perimeter of a swimming pool.\n5. Measuring the perimeter of a room to install baseboards.",
+                "section_3_is_table": false,
+                "section_3_name": "Quizzes",
+                "section_3_content": [
+                    {{{{ "question": "How do you find the perimeter of a rectangle?", "answer": "Add the lengths of all four sides" }}}},
+                    {{{{ "question": "What is the perimeter of a square with sides of 5 meters?", "answer": "20 meters" }}}},
+                    {{{{ "question": "If a rectangle has sides of 6 meters and 4 meters, what is its perimeter?", "answer": "20 meters" }}}},
+                    {{{{ "question": "Why is knowing the perimeter important?", "answer": "It helps in calculating the boundary length for enclosing spaces" }}}},
+                    {{{{ "question": "How can you find the perimeter of a triangle?", "answer": "Add the lengths of all three sides" }}}}
+                ]
+            }}}},
+            {{{{
+                "topic_name": "Fractions",
+                "section_1_is_table": false,
+                "section_1_name": "Reading Material",
+                "section_1_content": "Fractions represent parts of a whole. Understanding fractions is important for dividing things into equal parts and comparing sizes. For example, 1/2 is the same as 2/4.",
+                "section_2_is_table": false,
+                "section_2_name": "Real World Examples",
+                "section_2_content": "1. Splitting a pizza into equal slices.\n2. Measuring ingredients for a recipe.\n3. Dividing a candy bar among friends.\n4. Comparing the sizes of different pieces of pie.\n5. Understanding half-time in sports.",
+                "section_3_is_table": false,
+                "section_3_name": "Quizzes",
+                "section_3_content": [
+                    {{{{ "question": "What is 1/2 equivalent to?", "answer": "2/4" }}}},
+                    {{{{ "question": "How can you represent 3/4 on a number line?", "answer": "Divide a line into 4 equal parts and mark 3 parts" }}}},
+                    {{{{ "question": "What fraction of a pizza is left if you eat 3 out of 8 slices?", "answer": "5/8" }}}},
+                    {{{{ "question": "Why are fractions useful?", "answer": "They help in dividing things into equal parts and making comparisons" }}}},
+                    {{{{ "question": "How can you add 1/4 and 2/4?", "answer": "By adding the numerators: 1 + 2 = 3/4" }}}}
+                ]
+            }}}}
+        ],
+        "is_educational": true
+    }}}}
 ]
 
 -----------------------
 ✍️ INPUT
 -----------------------
-{{{{ 
+{{{{
   "feeds": {{{{feeds}}}},
   "grade": {{{{grade}}}}
 }}}}
@@ -192,12 +249,12 @@ EXPECTED OUTPUT:
 
 class OpenAIProcessor:
 
-    def generate_educational_content(self, feeds: str, grade: str) -> list:
+    def generate_educational_content(self, text: str, grade: str) -> list:
         log_msg(f"Generating educational content")
-        prompt = educational_multi_shot_prompt.format(feeds=feeds, grade=grade)
+        prompt = educational_multi_shot_prompt.format(feeds=text, grade=grade)
         response_content = self._build_completion(prompt)
         log_msg(f"Response content : {response_content}")
-        return self._parse_json_response(response_content, fallback_topic=feeds)
+        return self._parse_json_response(response_content, fallback_topic=text)
 
     def _build_completion(self, prompt: str) -> str:
         try:
@@ -212,8 +269,8 @@ class OpenAIProcessor:
                         "content": prompt
                     }
                 ],
-                model="gpt-4",
-                temperature=0.3
+                model="gpt-4o",
+                temperature=0.5
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
